@@ -11,13 +11,8 @@
   "dependencies": {
     "@heroui/react": "^3.1.0",
     "@hookform/resolvers": "^5.4.0",
-    "@types/bcryptjs": "^2.4.6",
     "axios": "^1.7.0",
-    "bcryptjs": "^3.0.3",
-    "better-auth": "^1.6.14",
     "date-fns": "^4.4.0",
-    "framer-motion": "^12.0.0",
-    "lucide-react": "^0.400.0",
     "next": "16.2.7",
     "react": "19.2.4",
     "react-dom": "19.2.4",
