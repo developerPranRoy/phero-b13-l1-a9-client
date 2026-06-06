@@ -15,7 +15,6 @@ export default function FeaturedTutors() {
       .get("/api/tutors?limit=6")
       .then((res) => {
         const raw = res.data;
-        // shape: { success, data: { tutors: [] } }
         const list: Tutor[] =
           raw?.data?.tutors ?? raw?.tutors ?? (Array.isArray(raw) ? raw : []);
         setTutors(list);
@@ -48,7 +47,7 @@ export default function FeaturedTutors() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {tutors.map((t) => (
-            <TutorCard key={t._id} tutor={t} />
+            <TutorCard key={t.id} tutor={t} />
           ))}
         </div>
       )}
