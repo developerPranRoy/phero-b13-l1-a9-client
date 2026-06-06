@@ -21,10 +21,9 @@ export default function TutorsPage() {
       if (startDate) params.set("startDate", startDate);
       if (endDate) params.set("endDate", endDate);
       const { data } = await api.get(`/api/tutors?${params}`);
-      const raw = data;
-      const list = Array.isArray(raw)
-        ? raw
-        : raw.tutors ?? raw.data ?? [];
+      // shape: { success, data: { tutors: [] } }
+      const list: Tutor[] =
+        data?.data?.tutors ?? data?.tutors ?? (Array.isArray(data) ? data : []);
       setTutors(list);
     } catch {
       setTutors([]);

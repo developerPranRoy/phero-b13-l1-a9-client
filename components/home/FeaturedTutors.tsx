@@ -14,11 +14,10 @@ export default function FeaturedTutors() {
     api
       .get("/api/tutors?limit=6")
       .then((res) => {
-        // handle { tutors: [] }, { data: [] }, or plain array
         const raw = res.data;
-        const list = Array.isArray(raw)
-          ? raw
-          : raw.tutors ?? raw.data ?? [];
+        // shape: { success, data: { tutors: [] } }
+        const list: Tutor[] =
+          raw?.data?.tutors ?? raw?.tutors ?? (Array.isArray(raw) ? raw : []);
         setTutors(list);
       })
       .catch(() => setTutors([]))

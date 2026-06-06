@@ -6,7 +6,7 @@ import api from "@/lib/axios";
 import { useAuth } from "@/context/AuthContext";
 import Spinner from "@/components/ui/Spinner";
 import toast from "react-hot-toast";
-import { Button, Chip, Modal, useOverlayState, Table } from "@heroui/react";
+import { Button, Modal, useOverlayState, Table } from "@heroui/react";
 import { format, parseISO } from "date-fns";
 import Link from "next/link";
 
@@ -23,9 +23,8 @@ export default function MyBookingsPage() {
       .get(`/api/bookings?email=${user.email}`)
       .then((r) => {
         const raw = r.data;
-        const list = Array.isArray(raw)
-          ? raw
-          : raw.bookings ?? raw.data ?? [];
+        const list: Booking[] =
+          raw?.data?.bookings ?? raw?.bookings ?? (Array.isArray(raw) ? raw : []);
         setBookings(list);
       })
       .finally(() => setLoading(false));
@@ -37,7 +36,7 @@ export default function MyBookingsPage() {
       await api.patch(`/api/bookings/${cancelId}/cancel`);
       setBookings((prev) =>
         prev.map((b) =>
-          b._id === cancelId ? { ...b, status: "cancelled" } : b,
+          b.id === cancelId ? { ...b, status: "cancelled" } : b,
         ),
       );
       toast.success("Booking cancelled");
@@ -86,30 +85,30 @@ export default function MyBookingsPage() {
               </Table.Header>
               <Table.Body items={bookings}>
                 {(b) => (
-                  <Table.Row id={b._id}>
+                  <Table.Row id={b.id}>
                     <Table.Cell className="font-medium dark:text-white">
-                      {b.tutorName}
+                      {b.tutor_name}
                     </Table.Cell>
-                    <Table.Cell>{b.studentName}</Table.Cell>
+                    <Table.Cell>{b.student_name}</Table.Cell>
                     <Table.Cell className="text-sm text-gray-500">
-                      {b.studentEmail}
+                      {b.student_email}
                     </Table.Cell>
                     <Table.Cell>
                       <code className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded font-mono">
-                        {b.sessionToken.slice(0, 8)}…
+                        {b.session_token?.slice(0, 8)}…
                       </code>
                     </Table.Cell>
                     <Table.Cell className="text-sm text-gray-500">
-                      {format(parseISO(b.bookedAt), "dd MMM yyyy")}
+                      {format(parseISO(b.booked_at), "dd MMM yyyy")}
                     </Table.Cell>
                     <Table.Cell>
-                      <Chip
-                        size="sm"
-                        color={b.status === "pending" ? "warning" : "danger"}
-                        variant="soft"
-                      >
+                      <span className={`px-2 py-0.5 text-xs rounded-full font-medium ${
+                        b.status === "pending"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-600"
+                      }`}>
                         {b.status}
-                      </Chip>
+                      </span>
                     </Table.Cell>
                     <Table.Cell>
                       {b.status === "pending" ? (
@@ -117,7 +116,7 @@ export default function MyBookingsPage() {
                           size="sm"
                           variant="danger-soft"
                           onPress={() => {
-                            setCancelId(b._id);
+                            setCancelId(b.id);
                             cancelModal.open();
                           }}
                         >

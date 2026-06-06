@@ -4,7 +4,7 @@ import { Tutor } from "@/types";
 import api from "@/lib/axios";
 import Spinner from "@/components/ui/Spinner";
 import PrivateRoute from "@/components/ui/PrivateRoute";
-import { Button, Chip, Modal, useOverlayState } from "@heroui/react";
+import { Button, Modal, useOverlayState } from "@heroui/react";
 import FormField from "@/components/ui/FormField";
 import { useAuth } from "@/context/AuthContext";
 import toast from "react-hot-toast";
@@ -27,16 +27,21 @@ export default function TutorDetailPage({
   useEffect(() => {
     api
       .get(`/api/tutors/${id}`)
-      .then((r) => setTutor(r.data))
+      .then((r) => {
+        // handle { success, data: { tutor: {} } } or { data: {} } or direct object
+        const raw = r.data;
+        const t: Tutor = raw?.data?.tutor ?? raw?.tutor ?? raw?.data ?? raw;
+        setTutor(t);
+      })
       .catch(() => setTutor(null))
       .finally(() => setLoading(false));
   }, [id]);
 
   const canBook = () => {
     if (!tutor) return { ok: false, msg: "" };
-    if (tutor.totalSlot <= 0)
+    if (tutor.total_slot <= 0)
       return { ok: false, msg: "No available slots left." };
-    const sessionDate = parseISO(tutor.sessionStartDate);
+    const sessionDate = parseISO(tutor.session_start_date);
     if (isBefore(new Date(), sessionDate))
       return {
         ok: false,
@@ -50,21 +55,25 @@ export default function TutorDetailPage({
     setBooking(true);
     try {
       await api.post("/api/bookings", {
-        tutorId: tutor._id,
+        tutorId: tutor.id,
         tutorName: tutor.name,
         studentName: user.name,
         studentEmail: user.email,
         phone,
       });
       setTutor((prev) =>
-        prev ? { ...prev, totalSlot: prev.totalSlot - 1 } : prev,
+        prev ? { ...prev, total_slot: prev.total_slot - 1 } : prev,
       );
       toast.success("Session booked! Check My Bookings for your token.");
       modalState.close();
+      setPhone("");
     } catch (err: unknown) {
       const msg =
+        (err as { response?: { data?: { message?: string; error?: string } } })
+          ?.response?.data?.message ||
         (err as { response?: { data?: { error?: string } } })?.response?.data
-          ?.error || "Booking failed";
+          ?.error ||
+        "Booking failed";
       toast.error(msg);
     } finally {
       setBooking(false);
@@ -76,11 +85,19 @@ export default function TutorDetailPage({
     return (
       <div className="text-center py-20">
         <p className="text-5xl mb-4">❌</p>
-        <p className="text-xl font-semibold">Tutor not found</p>
+        <p className="text-xl font-semibold dark:text-white">Tutor not found</p>
       </div>
     );
 
   const { ok, msg } = canBook();
+  const fee =
+    typeof tutor.hourly_fee === "string"
+      ? parseFloat(tutor.hourly_fee)
+      : tutor.hourly_fee;
+  const days = tutor.available_days
+    ?.toString()
+    .replace(/[{}"]/g, "")
+    .replace(/,/g, ", ");
 
   return (
     <PrivateRoute>
@@ -103,32 +120,34 @@ export default function TutorDetailPage({
             <p className="text-gray-500 mb-3">{tutor.institution}</p>
 
             <div className="flex flex-wrap gap-2 mb-4">
-              <Chip variant="soft" color="accent">
+              <span className="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
                 {tutor.subject}
-              </Chip>
-              <Chip variant="secondary">{tutor.teachingMode}</Chip>
-              <Chip
-                color={tutor.totalSlot > 0 ? "success" : "danger"}
-                variant="soft"
+              </span>
+              <span className="px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                {tutor.teaching_mode}
+              </span>
+              <span
+                className={`px-3 py-1 text-sm rounded-full font-medium ${
+                  tutor.total_slot > 0
+                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                    : "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-300"
+                }`}
               >
-                {tutor.totalSlot > 0
-                  ? `${tutor.totalSlot} slots available`
+                {tutor.total_slot > 0
+                  ? `${tutor.total_slot} slots available`
                   : "Fully booked"}
-              </Chip>
+              </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-6">
               {[
-                {
-                  label: "Available",
-                  val: `${tutor.availableDays} · ${tutor.availableTime}`,
-                },
+                { label: "Available", val: `${days} · ${tutor.available_time}` },
                 { label: "Location", val: `📍 ${tutor.location}` },
                 {
                   label: "Session Start",
-                  val: format(parseISO(tutor.sessionStartDate), "dd MMM yyyy"),
+                  val: format(parseISO(tutor.session_start_date), "dd MMM yyyy"),
                 },
-                { label: "Experience", val: tutor.experience },
+                { label: "Experience", val: `${tutor.experience} yrs` },
               ].map(({ label, val }) => (
                 <div
                   key={label}
@@ -142,7 +161,7 @@ export default function TutorDetailPage({
 
             <div className="flex items-center gap-4 mb-4">
               <span className="text-3xl font-bold text-blue-600">
-                ৳{tutor.hourlyFee}
+                ৳{fee}
                 <span className="text-base font-normal text-gray-500">/hr</span>
               </span>
             </div>
@@ -171,38 +190,40 @@ export default function TutorDetailPage({
           <Modal.Container>
             <Modal.Dialog>
               <Modal.Header>
-                <Modal.Heading>Book a Session with {tutor.name}</Modal.Heading>
+                <Modal.Heading>
+                  Book a Session with {tutor.name}
+                </Modal.Heading>
                 <Modal.CloseTrigger />
               </Modal.Header>
               <Modal.Body className="flex flex-col gap-3">
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
                     Student Name
                   </label>
                   <input
                     value={user?.name || ""}
                     readOnly
-                    className="w-full mt-1 px-3 py-2 rounded-md border border-gray-200 bg-gray-50 text-sm"
+                    className="w-full mt-1 px-3 py-2 rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
                     Email
                   </label>
                   <input
                     value={user?.email || ""}
                     readOnly
-                    className="w-full mt-1 px-3 py-2 rounded-md border border-gray-200 bg-gray-50 text-sm"
+                    className="w-full mt-1 px-3 py-2 rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm dark:text-white"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-600">
+                  <label className="text-sm font-medium text-gray-600 dark:text-gray-300">
                     Tutor
                   </label>
                   <input
                     value={tutor.name}
                     readOnly
-                    className="w-full mt-1 px-3 py-2 rounded-md border border-gray-200 bg-gray-50 text-sm"
+                    className="w-full mt-1 px-3 py-2 rounded-md border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-sm dark:text-white"
                   />
                 </div>
                 <FormField

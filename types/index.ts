@@ -1,31 +1,31 @@
 export interface Tutor {
-  _id: string;
+  id: string;
   name: string;
   photo: string;
   subject: string;
-  availableDays: string;
-  availableTime: string;
-  hourlyFee: number;
-  totalSlot: number;
-  sessionStartDate: string;
+  available_days: string;
+  available_time: string;
+  hourly_fee: string | number;
+  total_slot: number;
+  session_start_date: string;
   institution: string;
   experience: string;
   location: string;
-  teachingMode: "Online" | "Offline" | "Both";
-  createdBy: string;
-  createdAt: string;
+  teaching_mode: "Online" | "Offline" | "Both";
+  created_by: string;
+  created_at: string;
 }
 
 export interface Booking {
-  _id: string;
-  tutorId: string;
-  tutorName: string;
-  studentName: string;
-  studentEmail: string;
+  id: string;
+  tutor_id: string;
+  tutor_name: string;
+  student_name: string;
+  student_email: string;
   phone: string;
   status: "pending" | "cancelled";
-  sessionToken: string;
-  bookedAt: string;
+  session_token: string;
+  booked_at: string;
 }
 
 export interface User {
