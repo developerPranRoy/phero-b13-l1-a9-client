@@ -51,7 +51,13 @@ export default function MyTutorsPage() {
     if (!user) return;
     api
       .get(`/api/tutors?createdBy=${user.email}&all=true`)
-      .then((r) => setTutors(r.data.tutors || []))
+      .then((r) => {
+        const raw = r.data;
+        const list = Array.isArray(raw)
+          ? raw
+          : raw.tutors ?? raw.data ?? [];
+        setTutors(list);
+      })
       .finally(() => setLoading(false));
   }, [user]);
 

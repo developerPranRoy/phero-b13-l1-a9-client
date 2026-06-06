@@ -21,7 +21,13 @@ export default function MyBookingsPage() {
     if (!user) return;
     api
       .get(`/api/bookings?email=${user.email}`)
-      .then((r) => setBookings(r.data.bookings || []))
+      .then((r) => {
+        const raw = r.data;
+        const list = Array.isArray(raw)
+          ? raw
+          : raw.bookings ?? raw.data ?? [];
+        setBookings(list);
+      })
       .finally(() => setLoading(false));
   }, [user]);
 

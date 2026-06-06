@@ -3,19 +3,23 @@
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
-import { Button, Dropdown, Avatar, Switch } from "@heroui/react";
+import { Switch } from "@heroui/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import Image from "next/image";
 
 export default function AppNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { user, logout, loading } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
 
   const handleLogout = () => {
     logout();
+    setDropdownOpen(false);
+    setMenuOpen(false);
     toast.success("Logged out successfully");
     router.push("/");
   };
@@ -35,7 +39,7 @@ export default function AppNavbar() {
   return (
     <header className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        
+
         <Link
           href="/"
           className="font-bold text-xl text-blue-600 dark:text-blue-400 shrink-0"
@@ -43,6 +47,7 @@ export default function AppNavbar() {
           🎓 MediQueue
         </Link>
 
+        {/* Desktop nav links */}
         <nav className="hidden sm:flex items-center gap-1 flex-1 justify-center">
           {navLinks.map((link) => (
             <Link
@@ -55,9 +60,10 @@ export default function AppNavbar() {
           ))}
         </nav>
 
-      
+        {/* Right side */}
         <div className="flex items-center gap-2">
-         
+
+          {/* Dark mode toggle */}
           <Switch
             isSelected={theme === "dark"}
             onChange={toggleTheme}
@@ -69,69 +75,72 @@ export default function AppNavbar() {
             </Switch.Control>
           </Switch>
 
-          {user ? (
-            <div className="flex items-center gap-2">
-              <Dropdown>
-                <Dropdown.Trigger>
-                  <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <Avatar size="sm">
-                      {user.image ? (
-                        <Avatar.Image src={user.image} alt={user.name} />
-                      ) : (
-                        <Avatar.Fallback>
-                          {user.name?.[0]?.toUpperCase()}
-                        </Avatar.Fallback>
-                      )}
-                    </Avatar>
+          {/* Auth section — only render after hydration */}
+          {!loading && (
+            <>
+              {user ? (
+                <div className="relative hidden sm:block">
+                  <button
+                    onClick={() => setDropdownOpen((p) => !p)}
+                    className="flex items-center gap-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {user.image ? (
+                      <Image
+                        src={user.image}
+                        alt={user.name}
+                        width={32}
+                        height={32}
+                        className="rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold">
+                        {user.name?.[0]?.toUpperCase()}
+                      </div>
+                    )}
                   </button>
-                </Dropdown.Trigger>
-                <Dropdown.Popover>
-                  <Dropdown.Menu aria-label="User menu">
-                    <Dropdown.Item
-                      id="name"
-                      className="text-xs font-medium cursor-default"
-                    >
-                      {user.name}
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      id="email"
-                      className="text-xs text-gray-500 cursor-default"
-                    >
-                      {user.email}
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      id="logout"
-                      onAction={handleLogout}
-                      className="text-red-500"
-                    >
-                      Logout
-                    </Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown.Popover>
-              </Dropdown>
-              <Button variant="ghost" size="sm" onPress={handleLogout}>
-                Logout
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onPress={() => router.push("/login")}
-              >
-                Login
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onPress={() => router.push("/register")}
-              >
-                Register
-              </Button>
-            </div>
+
+                  {dropdownOpen && (
+                    <>
+                      {/* Backdrop to close on outside click */}
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setDropdownOpen(false)}
+                      />
+                      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 py-1">
+                        <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
+                          <p className="text-sm font-medium dark:text-white truncate">{user.name}</p>
+                          <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                        </div>
+                        <button
+                          onClick={handleLogout}
+                          className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div className="hidden sm:flex items-center gap-2">
+                  <button
+                    onClick={() => router.push("/login")}
+                    className="px-4 py-1.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  >
+                    Login
+                  </button>
+                  <button
+                    onClick={() => router.push("/register")}
+                    className="px-4 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Register
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
+          {/* Mobile hamburger */}
           <button
             className="sm:hidden p-2 rounded-md text-gray-600 dark:text-gray-300"
             onClick={() => setMenuOpen((p) => !p)}
@@ -142,7 +151,7 @@ export default function AppNavbar() {
         </div>
       </div>
 
-     
+      {/* Mobile menu */}
       {menuOpen && (
         <div className="sm:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 pb-4">
           {navLinks.map((link) => (
@@ -155,30 +164,37 @@ export default function AppNavbar() {
               {link.label}
             </Link>
           ))}
-          {user ? (
-            <button
-              onClick={() => { handleLogout(); setMenuOpen(false); }}
-              className="block w-full text-left py-2 text-sm text-red-500 hover:text-red-600"
-            >
-              Logout
-            </button>
-          ) : (
-            <>
-              <Link
-                href="/login"
-                className="block py-2 text-sm text-blue-600"
-                onClick={() => setMenuOpen(false)}
-              >
-                Login
-              </Link>
-              <Link
-                href="/register"
-                className="block py-2 text-sm text-blue-600"
-                onClick={() => setMenuOpen(false)}
-              >
-                Register
-              </Link>
-            </>
+          {!loading && (
+            user ? (
+              <>
+                <div className="py-2 border-t border-gray-100 dark:border-gray-700 mt-2">
+                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left py-2 text-sm text-red-500 hover:text-red-600"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="block py-2 text-sm text-blue-600"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="block py-2 text-sm text-blue-600"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Register
+                </Link>
+              </>
+            )
           )}
         </div>
       )}
