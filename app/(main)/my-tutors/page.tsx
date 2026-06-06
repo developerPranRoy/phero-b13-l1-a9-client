@@ -126,7 +126,7 @@ export default function MyTutorsPage() {
                   <Table.Row id={t._id}>
                     <Table.Cell>
                       <div className="flex items-center gap-2">
-                        <div className="relative w-9 h-9 flex-shrink-0">
+                        <div className="relative w-9 h-9 shrink-0">
                           <Image
                             src={t.photo || "https://i.pravatar.cc/36"}
                             alt={t.name}

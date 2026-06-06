@@ -20,7 +20,7 @@ export default function WhyChooseUs() {
             key={i}
             className="flex gap-4 p-5 rounded-xl border border-divider hover:border-primary transition-colors"
           >
-            <span className="text-3xl flex-shrink-0">{f.icon}</span>
+            <span className="text-3xl shrink-0">{f.icon}</span>
             <div>
               <h4 className="font-semibold mb-1">{f.title}</h4>
               <p className="text-sm text-foreground-500">{f.desc}</p>

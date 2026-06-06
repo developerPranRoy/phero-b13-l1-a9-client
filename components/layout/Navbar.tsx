@@ -38,7 +38,7 @@ export default function AppNavbar() {
         
         <Link
           href="/"
-          className="font-bold text-xl text-blue-600 dark:text-blue-400 flex-shrink-0"
+          className="font-bold text-xl text-blue-600 dark:text-blue-400 shrink-0"
         >
           🎓 MediQueue
         </Link>
@@ -70,38 +70,49 @@ export default function AppNavbar() {
           </Switch>
 
           {user ? (
-            <Dropdown>
-              <Dropdown.Trigger>
-                <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <Avatar size="sm">
-                    {user.image ? (
-                      <Avatar.Image src={user.image} alt={user.name} />
-                    ) : (
-                      <Avatar.Fallback>
-                        {user.name?.[0]?.toUpperCase()}
-                      </Avatar.Fallback>
-                    )}
-                  </Avatar>
-                </button>
-              </Dropdown.Trigger>
-              <Dropdown.Popover>
-                <Dropdown.Menu aria-label="User menu">
-                  <Dropdown.Item
-                    id="email"
-                    className="text-xs text-gray-500 cursor-default"
-                  >
-                    {user.email}
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    id="logout"
-                    onAction={handleLogout}
-                    className="text-red-500"
-                  >
-                    Logout
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown.Popover>
-            </Dropdown>
+            <div className="flex items-center gap-2">
+              <Dropdown>
+                <Dropdown.Trigger>
+                  <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <Avatar size="sm">
+                      {user.image ? (
+                        <Avatar.Image src={user.image} alt={user.name} />
+                      ) : (
+                        <Avatar.Fallback>
+                          {user.name?.[0]?.toUpperCase()}
+                        </Avatar.Fallback>
+                      )}
+                    </Avatar>
+                  </button>
+                </Dropdown.Trigger>
+                <Dropdown.Popover>
+                  <Dropdown.Menu aria-label="User menu">
+                    <Dropdown.Item
+                      id="name"
+                      className="text-xs font-medium cursor-default"
+                    >
+                      {user.name}
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      id="email"
+                      className="text-xs text-gray-500 cursor-default"
+                    >
+                      {user.email}
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      id="logout"
+                      onAction={handleLogout}
+                      className="text-red-500"
+                    >
+                      Logout
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown.Popover>
+              </Dropdown>
+              <Button variant="ghost" size="sm" onPress={handleLogout}>
+                Logout
+              </Button>
+            </div>
           ) : (
             <div className="flex items-center gap-2">
               <Button
@@ -144,7 +155,14 @@ export default function AppNavbar() {
               {link.label}
             </Link>
           ))}
-          {!user && (
+          {user ? (
+            <button
+              onClick={() => { handleLogout(); setMenuOpen(false); }}
+              className="block w-full text-left py-2 text-sm text-red-500 hover:text-red-600"
+            >
+              Logout
+            </button>
+          ) : (
             <>
               <Link
                 href="/login"

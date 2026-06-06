@@ -10,7 +10,7 @@ export default function TutorCard({ tutor }: { tutor: Tutor }) {
   return (
     <Card className="h-full flex flex-col hover:shadow-lg transition-shadow">
       <Card.Header className="gap-3">
-        <div className="relative w-14 h-14 flex-shrink-0">
+        <div className="relative w-14 h-14 shrink-0">
           <Image
             src={tutor.photo || "https://i.pravatar.cc/56"}
             alt={tutor.name}

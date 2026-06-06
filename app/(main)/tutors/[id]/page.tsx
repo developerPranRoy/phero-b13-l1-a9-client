@@ -86,7 +86,7 @@ export default function TutorDetailPage({
     <PrivateRoute>
       <div className="max-w-4xl mx-auto px-4 py-10">
         <div className="flex flex-col md:flex-row gap-8">
-          <div className="relative w-48 h-48 flex-shrink-0">
+          <div className="relative w-48 h-48 shrink-0">
             <Image
               src={tutor.photo || "https://i.pravatar.cc/192"}
               alt={tutor.name}
