@@ -55,10 +55,10 @@ export default function TutorDetailPage({
     setBooking(true);
     try {
       await api.post("/api/bookings", {
-        tutorId: tutor.id,
-        tutorName: tutor.name,
-        studentName: user.name,
-        studentEmail: user.email,
+        tutor_id: tutor.id,
+        tutor_name: tutor.name,
+        student_name: user.name,
+        student_email: user.email,
         phone,
       });
       setTutor((prev) =>

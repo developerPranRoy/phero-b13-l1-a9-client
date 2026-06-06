@@ -57,10 +57,19 @@ export default function AddTutorPage() {
   const onSubmit = async (data: FormData) => {
     try {
       await api.post("/api/tutors", {
-        ...data,
-        hourlyFee: Number(data.hourlyFee),
-        totalSlot: Number(data.totalSlot),
-        createdBy: user?.email,
+        name: data.name,
+        photo: data.photo,
+        subject: data.subject,
+        available_days: data.availableDays,
+        available_time: data.availableTime,
+        hourly_fee: Number(data.hourlyFee),
+        total_slot: Number(data.totalSlot),
+        session_start_date: data.sessionStartDate,
+        institution: data.institution,
+        experience: data.experience,
+        location: data.location,
+        teaching_mode: data.teachingMode,
+        created_by: user?.email,
       });
       toast.success("Tutor added successfully!");
       router.push("/my-tutors");
