@@ -59,7 +59,7 @@ export default function LoginPage() {
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md">
         <Card.Header>
-          <Card.Title>Welcome Back</Card.Title>
+          <Card.Title className="text-2xl font-bold">Login</Card.Title>
           <Card.Description>Sign in to your MediQueue account</Card.Description>
         </Card.Header>
         <Card.Content className="flex flex-col gap-4">
